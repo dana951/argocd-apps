@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: podinfo
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/dana951/gitops-manifests.git
+        revision: HEAD
+        directories:
+          - path: environments/podinfo/*
+  template:
+    metadata:
+      name: "podinfo-{{path.basename}}"
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/dana951/gitops-manifests.git
+        targetRevision: HEAD
+        path: charts/podinfo
+        helm:
+          releaseName: podinfo
+          valueFiles:
+            - ../../environments/podinfo/{{path.basename}}/values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
