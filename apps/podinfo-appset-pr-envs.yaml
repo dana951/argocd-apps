@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: podinfo-pr-envs
+  namespace: argocd
+spec:
+  goTemplate: true
+  generators:
+    - scmProvider:
+        github:
+          user: dana951
+          tokenRef:
+            secretName: argocd-github-token
+            key: token
+          allBranches: true
+        cloneProtocol: https
+        filters:
+          - repositoryMatch: "^gitops-manifests$"
+            branchMatch: "^podinfo-pr-[0-9]+-[a-f0-9]{7}$"
+  template:
+    metadata:
+      name: "{{ .branch }}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/dana951/gitops-manifests.git
+        targetRevision: "{{ .branch }}"
+        path: charts/podinfo
+        helm:
+          releaseName: "{{ .branch }}"
+          valueFiles:
+            - "../../environments/podinfo/qa/values.yaml"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{ .branch }}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+        preserveResourcesOnDeletion: false
