@@ -1,6 +1,6 @@
 # argocd-apps
 
-Argo CD bootstrap repository that manages application onboarding using the [App of Apps pattern](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/).
+Argo CD bootstrap repository that manages application onboarding using the [App of Apps](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/) pattern.
 
 This repository is part of the larger [`eks-gitops-platform`](https://github.com/dana951/eks-gitops-platform) portfolio.  
 Its responsibility is to define which Argo CD applications exist and how they map to deployable workload definitions.
@@ -9,7 +9,7 @@ Its responsibility is to define which Argo CD applications exist and how they ma
 
 - Defines a root Argo CD `Application` (`main-app`) that points to this repository.
 - Uses `apps/` as the declarative catalog of managed applications.
-- Uses an `ApplicationSet` to generate one Argo CD `Application` per environment for [`podinfo` app](https://github.com/dana951/app-source.git).
+- Uses an `ApplicationSet` to generate one Argo CD `Application` per environment for [`podinfo`](https://github.com/dana951/app-source.git) app.
 - Enables automated sync, self-healing, and pruning for managed applications.
 
 ## Why This Repository Exists
@@ -25,23 +25,24 @@ This split makes responsibilities clear: Argo CD application definitions stay he
 
 ```text
 argocd-apps/
-├── main-app.yaml               # Root App-of-Apps entrypoint
+├── main-app.yaml                   # Application - Root App-of-Apps entrypoint
 └── apps/
-    └── podinfo-appset.yaml     # ApplicationSet that generates Argo CD Applications per environment
+    ├── podinfo-appset.yaml         # ApplicationSet
+    └── podinfo-appset-pr-envs.yaml # ApplicationSet      
+
 ```
 
 ## App of Apps Bootstrap Flow
 
 1. Apply `main-app.yaml` once to the Argo CD namespace.
 2. Argo CD syncs this repository path (`apps/`).
-3. `podinfo-appset.yaml` is applied.
-4. The `ApplicationSet` scans `gitops-manifests/environments/podinfo/*`.
-5. One Argo CD `Application` is generated per environment:
-   - `podinfo-dev`
-   - `podinfo-qa`
-   - `podinfo-staging`
-   - `podinfo-prod`
-6. Each generated app deploys `charts/podinfo` with the matching environment values file.
+3. `podinfo-appset.yaml` is applied for long-lived environments (staging/prod):
+   - This `ApplicationSet` generates one Application per environment:
+     - `podinfo-staging`
+     - `podinfo-prod`
+4. `podinfo-appset-pr-envs.yaml` is applied for ephemeral QA testing environments during CI/CD PR validation flow
+   - This `ApplicationSet` watches [`gitops-manifests`](https://github.com/dana951/gitops-manifests.git) branches created during CI/CD PR validation flow and generates one Argo CD `Application` per matching branch.
+5. Each generated app deploys `charts/podinfo` using the corresponding values file.
 
 ## Managed Application Behavior
 

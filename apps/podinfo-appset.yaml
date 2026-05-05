@@ -9,7 +9,8 @@ spec:
         repoURL: https://github.com/dana951/gitops-manifests.git
         revision: HEAD
         directories:
-          - path: environments/podinfo/*
+          - path: environments/podinfo/staging
+          - path: environments/podinfo/prod
   template:
     metadata:
       name: "podinfo-{{path.basename}}"
