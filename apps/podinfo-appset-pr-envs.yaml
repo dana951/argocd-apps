@@ -8,7 +8,7 @@ spec:
   generators:
     - scmProvider:
         github:
-          organization: dana951
+          user: dana951
           allBranches: true
           cloneProtocol: https
           githubAppCredentials:
