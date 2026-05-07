@@ -14,6 +14,8 @@ spec:
         requeueAfterSeconds: 120 # Polls every 2 minutes
         filters:
           - branchMatch: "^pr-[0-9]+-[a-f0-9]{7}$"
+  syncPolicy:
+    preserveResourcesOnDeletion: false
   template:
     metadata:
       name: "{{ .branch }}"
@@ -38,4 +40,3 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-        preserveResourcesOnDeletion: false
