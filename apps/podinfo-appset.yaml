@@ -11,6 +11,8 @@ spec:
         directories:
           - path: environments/podinfo/staging
           - path: environments/podinfo/prod
+  syncPolicy:
+    preserveResourcesOnDeletion: false
   template:
     metadata:
       name: "podinfo-{{path.basename}}"
@@ -33,4 +35,3 @@ spec:
           selfHeal: true
         syncOptions:
           - CreateNamespace=true
-        preserveResourcesOnDeletion: false
