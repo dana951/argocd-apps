@@ -36,17 +36,19 @@ argocd-apps/
 
 1. Apply `main-app.yaml` once to the Argo CD namespace.
 2. Argo CD syncs this repository path (`apps/`).
-3. `podinfo-appset.yaml` is applied for long-lived environments (staging/prod):
+3. `apps/podinfo-appset.yaml` is applied for **long-lived** environments (staging/prod).
    - This `ApplicationSet` generates one Application per environment:
-     - `podinfo-staging`
-     - `podinfo-prod`
-4. `podinfo-appset-pr-envs.yaml` is applied for ephemeral QA testing environments during CI/CD PR validation flow
-   - This `ApplicationSet` watches [`gitops-manifests`](https://github.com/dana951/gitops-manifests.git) branches created during CI/CD PR validation flow and generates one Argo CD `Application` per matching branch.
+     - podinfo-staging
+     - podinfo-prod
+4. `apps/podinfo-appset-pr-envs.yaml` is applied for **ephemeral** testing environments which are dynamically created as part of CI/CD PR validation flow.
+   - This `ApplicationSet` watches the [`gitops-manifests`](https://github.com/dana951/gitops-manifests.git) repository for **open PRs** from side branches that follow a specific naming format, and generates one Argo CD `Application` per matching PR.
 5. Each generated app deploys `charts/podinfo` using the corresponding values file.
+
+> Note: For watching Open PRs, a [GitHub App](https://oneuptime.com/blog/post/2026-02-26-argocd-github-app-credentials/view) for Argo CD was created and installed in [`gitops-manifests`](https://github.com/dana951/gitops-manifests) repository + [k8s secret](https://github.com/dana951/infra-aws#1-secret-management).
 
 ## Managed Application Behavior
 
-Both the root app and generated apps are configured with:
+Both the root app and generated apps are configured with automated sync:
 
 - `automated.prune: true` - resources removed from Git are removed from cluster.
 - `automated.selfHeal: true` - drift from desired state is automatically corrected.
